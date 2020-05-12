@@ -1,0 +1,14 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>diverging-notes.png</file>
+    <file>diff_futsuu_big.png</file>
+    <file>diff_futsuu_small.png</file>
+    <file>diff_kantan_big.png</file>
+    <file>diff_kantan_small.png</file>
+    <file>diff_muzukashii_big.png</file>
+    <file>diff_muzukashii_small.png</file>
+    <file>diff_oni_big.png</file>
+    <file>diff_oni_small.png</file>
+    <file>diff_ura_small.png</file>
+  </qresource>
+</RCC>
