@@ -3,7 +3,6 @@
 TaikoTool::TaikoTool(QMainWindow *parent) : QMainWindow(parent), ui(new Ui::TaikoTool),
                                             settings(new QSettings("ToppleKek", "taiko-tool")) {
     songManager = new SongManager(settings);
-    Utils::copyDir(QDir("/home/topkek/testTaikoFolder/japari"), QDir("/home/topkek/testTaikoFolder/autotest/Data/NX/fumen/enso/00000"), "japari", "00000");
     ui->setupUi(this);
 
     songTabManager = new SongTabManager(ui, songManager, settings);

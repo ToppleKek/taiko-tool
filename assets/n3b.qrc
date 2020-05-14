@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="n3b">
+    <file>template.nus3bank</file>
+  </qresource>
+</RCC>

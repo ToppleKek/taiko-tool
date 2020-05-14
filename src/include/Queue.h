@@ -3,7 +3,6 @@
 
 #include <QMutex>
 #include <QMutexLocker>
-#include <QQueue>
 #include <QList>
 #include <QThread>
 #include <QSettings>
@@ -17,7 +16,7 @@ public:
     void enqueue(T item) {
         QMutexLocker lock(&mutex);
 
-        list.prepend(item);
+        list.append(item);
     }
 
     bool dequeue(T &value) {
@@ -51,15 +50,10 @@ public:
     }
 
 public slots:
-    void doWork(Queue<TaikoSong> *queue, QSettings *settings, const QDir *outDir) {
-        finished = false;
+    void doWork(Queue<TaikoSong> *queue, QSettings *settings, const QDir *outDir, bool *canceled) {
+        TaikoSong song;
 
-        for (;;) {
-            TaikoSong song;
-
-            if (!queue->dequeue(song))
-                break;
-
+        while(queue->dequeue(song) && !*canceled) {
             QString outPath = outDir->path() + "/" + song.getSongFileName() + ".nus3bank";
             Nus3bank::orbisToNX(settings, song.getSongFilePath(), outPath, song.getId());
 
@@ -75,14 +69,19 @@ signals:
     void workerFinished();
 
 private:
-    bool finished;
+    bool finished = false;
 };
 
 class QueueProcessor : public QObject {
     Q_OBJECT
 
 public:
-    QueueProcessor(Queue<TaikoSong> *queue, int numThreads) : queue(queue) {
+    QueueProcessor(Queue<TaikoSong> *queue, QSettings *settings) : queue(queue), settings(settings), canceled(false) {
+        int numThreads = 4;
+
+        if (settings->contains("build/numThreads"))
+            numThreads = settings->value("build/numThreads").toInt();
+
         for (int i = 0; i < numThreads; i++) {
             threads << new QThread;
             workers << new QueueWorker;
@@ -104,11 +103,13 @@ public:
         }
     }
 
-    void start(QSettings *settings, const QDir *outDir) {
-        emit run(queue, settings, outDir);
+    void start(const QDir *outDir) {
+        emit run(queue, settings, outDir, &canceled);
     }
 
-    void stop();
+    void terminate() {
+        canceled = true;
+    }
 
 public slots:
     void workerProgress() {
@@ -123,16 +124,17 @@ public slots:
         emit finished();
     }
 
+signals:
+    void run(Queue<TaikoSong> *queue, QSettings *settings, const QDir *outDir, bool *canceled);
+    void finished();
+    void progress();
+
 private:
     Queue<TaikoSong> *queue;
     QList<QueueWorker *> workers;
     QList<QThread *> threads;
-
-signals:
-    void run(Queue<TaikoSong> *queue, QSettings *settings, const QDir *outDir);
-    void finished();
-    void halt();
-    void progress();
+    QSettings *settings;
+    bool canceled;
 };
 
 #endif //TAIKO_TOOL_QUEUE_H

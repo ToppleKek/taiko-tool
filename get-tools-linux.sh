@@ -3,7 +3,7 @@ set -e
 CC=gcc
 SCRIPTPATH=$(dirname "$(readlink -f "$0")")
 
-printf "This will install libg719_decode to /usr/lib/\n"
+printf "This will install libg719_decode and libvgmstream to /usr/lib/\n"
 
 sudo -v
 # Keep-alive: update existing sudo time stamp if set, otherwise do nothing.
@@ -26,7 +26,7 @@ sudo mv libg719_decode.so /usr/lib/
 
 # Download and build vgmstream with G719 decoder enabled
 cd ..
-git clone https://github.com/ToppleKek/vgmstream vgmstream
+git clone https://github.com/losnoco/vgmstream.git vgmstream
 cd vgmstream
 
 ./bootstrap

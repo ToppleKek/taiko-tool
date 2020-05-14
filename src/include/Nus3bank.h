@@ -10,7 +10,6 @@
 
 #include <Utils.h>
 
-#define TEMPLATE_PATH "./template.nus3bank"
 #define MAX_ID_LEN 5
 #define SIZE_OFFSET_1 0x4c
 #define SIZE_OFFSET_2 0x1450
@@ -21,7 +20,7 @@ namespace Nus3bank {
     static void orbisToNX(QSettings *settings, const QString &orbisN3BPath, const QString &outPath, const QString &id) {
         QString vgmstreamPath = settings->value("vgmstream/path").toString();
         QString vgaudioPath = settings->value("vgaudio/path").toString();
-        QFile templateFile(TEMPLATE_PATH);
+        QFile templateFile(":/n3b/template.nus3bank");
         QFile orbisFile(orbisN3BPath);
         QFile outFile(outPath);
         QByteArray templateData;

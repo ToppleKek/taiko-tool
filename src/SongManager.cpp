@@ -22,7 +22,8 @@ void SongManager::processGameDir(const QDir &dir, const QString &source, bool lo
     QJsonDocument wordListDocument = QJsonDocument::fromJson(wordListJson.toUtf8());
     QJsonArray items = musicInfoDocument["items"].toArray();
     QJsonArray wordList = wordListDocument["items"].toArray();
-    SongDuplicateDialog::Intent intent = SongDuplicateDialog::Intent::NO;
+//    SongDuplicateDialog::Intent intent = SongDuplicateDialog::Intent::NO;
+    QMessageBox::StandardButton intentButton = QMessageBox::No;
 
     gameDirs << dir;
 
@@ -52,18 +53,19 @@ void SongManager::processGameDir(const QDir &dir, const QString &source, bool lo
         int dupeIndex = loadedSongs.indexOf(newSong);
 
         if (dupeIndex > -1) {
-            if (intent == SongDuplicateDialog::Intent::NO_TO_ALL)
+            if (intentButton == QMessageBox::NoToAll)
                 goto update_progress;
-            else if (intent == SongDuplicateDialog::Intent::YES_TO_ALL) {
+            else if (intentButton == QMessageBox::YesToAll) {
                 loadedSongs.removeAt(dupeIndex);
                 goto load_song;
             }
 
-            SongDuplicateDialog dupeDialog(nullptr, loadedSongs[dupeIndex]);
-            dupeDialog.exec();
-            intent = dupeDialog.getIntent();
+            intentButton = QMessageBox::question(nullptr, "Duplicate Song", "The song " +
+                                                 newSong.getTitleEN() + " (" + newSong.getId() + ") is already loaded from source: " +
+                                                 loadedSongs[dupeIndex].getTaikoToolSource() + ". Would you like to replace this loaded song?",
+                                                 QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No | QMessageBox::NoToAll);
 
-            if (intent == SongDuplicateDialog::Intent::NO || intent == SongDuplicateDialog::Intent::NO_TO_ALL)
+            if (intentButton == QMessageBox::No || intentButton == QMessageBox::NoToAll)
                 goto update_progress;
             else
                 loadedSongs.removeAt(dupeIndex);
@@ -188,10 +190,12 @@ void SongManager::build(const SongManager::BuildOptions &buildOptions) {
     QJsonArray outputSongs;
     QJsonArray outputWordList;
     QList<TaikoSong> collectedSongs = collectStagedSongs();
+    Queue<TaikoSong> *songQueue(new Queue<TaikoSong>);
+    QueueProcessor *queueProcessor;
 
-    QProgressDialog dialog("Constructing wordlist...", "Cancel", 0, loadedWordList.size(), nullptr);
-    dialog.setWindowModality(Qt::WindowModal);
-    dialog.show();
+    QProgressDialog *dialog(new QProgressDialog("Constructing wordlist...", "Cancel", 0, loadedWordList.size()));
+    dialog->setWindowModality(Qt::WindowModal);
+    dialog->show();
 
     // Modify any requested strings
     int newId = 0;
@@ -203,25 +207,25 @@ void SongManager::build(const SongManager::BuildOptions &buildOptions) {
 
         if (modeSelectIndex > -1 && buildOptions.showVersionMainMenu) {
             QJsonObject obj = loadedWordList[modeSelectIndex].toObject();
-            obj["englishUsText"] = "Select Mode. - (TaikoTool ver. 0.0.1)";
-            obj["japaneseText"] = "モードをえらぶ - (TaikoTool ver. 0.0.1)";
+            obj["englishUsText"] = QString("Select Mode. - TaikoTool ver. " + TAIKOTOOL_VER);
+            obj["japaneseText"] = QString("モードをえらぶ - TaikoTool ver. " + TAIKOTOOL_VER);
             loadedWordList[modeSelectIndex] = obj;
         }
 
         if (songSelectIndex > -1 && buildOptions.showVersionSongSelect) {
             QJsonObject obj = loadedWordList[songSelectIndex].toObject();
-            obj["englishUsText"] = "Select Song                                               (TT 0.0.1)";
-            obj["japaneseText"] = "曲をえらぶ                                                      (TT 0.0.1)";
+            obj["englishUsText"] = QString("Select Song").leftJustified(45, ' ') + "TaikoTool " + TAIKOTOOL_VER;
+            obj["japaneseText"] = QString("曲をえらぶ").leftJustified(50, ' ') + "TaikoTool " + TAIKOTOOL_VER;
             loadedWordList[songSelectIndex] = obj;
         }
     }
 
     // Add all the other non-song entries to the wordList
     for (const auto &item : loadedWordList) {
-        if (dialog.wasCanceled())
+        if (dialog->wasCanceled())
             return;
 
-        dialog.setValue(dialog.value() + 1);
+        dialog->setValue(dialog->value() + 1);
         QCoreApplication::processEvents();
         // Skip song entries as we already added them
         if (item.toObject()["key"].toString().contains(QRegExp(".*song_.*")))
@@ -230,9 +234,9 @@ void SongManager::build(const SongManager::BuildOptions &buildOptions) {
         outputWordList.append(item);
     }
 
-    dialog.setValue(0);
-    dialog.setMaximum(collectedSongs.size());
-    dialog.setLabelText("Copying and converting songs if required- This may take some time.");
+    dialog->setValue(0);
+    dialog->setMaximum(collectedSongs.size());
+    dialog->setLabelText("Copying maps and native songs...");
     QCoreApplication::processEvents();
 
     // Create output folder structure
@@ -242,11 +246,10 @@ void SongManager::build(const SongManager::BuildOptions &buildOptions) {
     buildOptions.outDir.mkpath("./Data/NX/fumen_hitwide/enso");
     buildOptions.outDir.mkpath("./Data/NX/fumen_hitnarrow/enso");
 
-    Queue<TaikoSong> songQueue;
     // Copy all songs and maps from all gameDirs to the build dir, but only if the song is staged
     for (auto &song : collectedSongs) {
         QString oldId;
-        if (dialog.wasCanceled())
+        if (dialog->wasCanceled())
             return;
 
         if (buildOptions.showSourceSubText) {
@@ -298,40 +301,44 @@ void SongManager::build(const SongManager::BuildOptions &buildOptions) {
         // Copy song
         if (song.getTaikoToolSource() == "PS4") {
             QString outPath = buildOptions.outDir.path() + "/Data/NX/" + song.getSongFileName() + ".nus3bank";
-            songQueue.enqueue(song);
-//            Nus3bank::orbisToNX(settings, song.getSongFilePath(), outPath, song.getId());
+            songQueue->enqueue(song);
         } else {
             QString fileName = song.getSongFileName().remove(0, 6) + ".nus3bank";
             QFile::copy(song.getSongFilePath(), buildOptions.outDir.path() + "/Data/NX/sound/" + fileName);
         }
 
-        dialog.setValue(dialog.value() + 1);
+        dialog->setValue(dialog->value() + 1);
         QCoreApplication::processEvents();
     }
 
-    bool finished = false;
-    QueueProcessor *queueProcessor(new QueueProcessor(&songQueue, 2));
-    connect(queueProcessor, &QueueProcessor::progress, this, []() {
-        qDebug() << "Progress";
+    if (songQueue->size() == 0) {
+        delete songQueue;
+        goto compress_datatables;
+    }
+
+    dialog->setValue(0);
+    dialog->setMaximum(songQueue->size());
+    dialog->setLabelText("Converting songs...");
+
+    queueProcessor = new QueueProcessor(songQueue, settings);
+
+    connect(queueProcessor, &QueueProcessor::progress, this, [dialog]() {
+        dialog->setValue(dialog->value() + 1);
     });
 
-    connect(queueProcessor, &QueueProcessor::finished, this, [&finished]() {
-        qDebug() << "finished";
-        finished = true;
+    connect(queueProcessor, &QueueProcessor::finished, this, [queueProcessor, dialog]() {
+        delete queueProcessor;
+        delete dialog;
     });
 
-    queueProcessor->start(settings, new QDir(buildOptions.outDir.path() + "/Data/NX/"));
+    connect(dialog, &QProgressDialog::canceled, this, [queueProcessor]() {
+        queueProcessor->terminate();
+        delete queueProcessor;
+    });
 
+    queueProcessor->start(new QDir(buildOptions.outDir.path() + "/Data/NX/"));
 
-    qDebug() << "Started queue processing";
-
-    while(!finished)
-        QCoreApplication::processEvents();
-
-    delete queueProcessor;
-
-    qDebug() << "Stopped";
-
+compress_datatables:
     musicInfoOutput["items"] = outputSongs;
     wordListObject["items"] = outputWordList;
 
@@ -339,13 +346,16 @@ void SongManager::build(const SongManager::BuildOptions &buildOptions) {
     QJsonDocument wordListDocument = QJsonDocument(wordListObject);
 
     // Compress wordlist and musicinfo json
-    gzFile musicInfoFile = gzopen(QString(buildOptions.outDir.path() + "/Data/NX/datatable/musicinfo.bin").toStdString().c_str(), "wb");
-    gzputs(musicInfoFile, musicInfoDocument.toJson().toStdString().c_str());
-    gzclose(musicInfoFile);
+    GZip::compress(musicInfoDocument.toJson().toStdString(),
+                   QString(buildOptions.outDir.path() + "/Data/NX/datatable/musicinfo.bin").toStdString());
+    GZip::compress(wordListDocument.toJson().toStdString(),
+                   QString(buildOptions.outDir.path() + "/Data/NX/datatable/wordlist.bin").toStdString());
 
-    gzFile wordListFile = gzopen(QString(buildOptions.outDir.path() + "/Data/NX/datatable/wordlist.bin").toStdString().c_str(), "wb");
-    gzputs(wordListFile, wordListDocument.toJson().toStdString().c_str());
-    gzclose(wordListFile);
-
-    emit buildCompleted();
+//    gzFile musicInfoFile = gzopen(QString(buildOptions.outDir.path() + "/Data/NX/datatable/musicinfo.bin").toStdString().c_str(), "wb");
+//    gzputs(musicInfoFile, musicInfoDocument.toJson().toStdString().c_str());
+//    gzclose(musicInfoFile);
+//
+//    gzFile wordListFile = gzopen(QString(buildOptions.outDir.path() + "/Data/NX/datatable/wordlist.bin").toStdString().c_str(), "wb");
+//    gzputs(wordListFile, wordListDocument.toJson().toStdString().c_str());
+//    gzclose(wordListFile);
 }

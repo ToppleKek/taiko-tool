@@ -584,7 +584,7 @@
      <x>0</x>
      <y>0</y>
      <width>1248</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuTaiko_Tool">
@@ -628,6 +628,7 @@
  </widget>
  <resources>
   <include location="../assets/icons.qrc"/>
+  <include location="../assets/n3b.qrc"/>
  </resources>
  <connections/>
  <buttongroups>

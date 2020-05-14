@@ -1,7 +1,6 @@
 #ifndef TAIKO_TOOL_SONGMANAGER_H
 #define TAIKO_TOOL_SONGMANAGER_H
 
-#include <sstream>
 #include <QString>
 #include <QList>
 #include <QJsonDocument>
@@ -14,64 +13,24 @@
 #include <QProgressDialog>
 #include <QCoreApplication>
 #include <QSettings>
-#include <QQueue>
-#include <QtConcurrent>
-#include <zlib.h>
+#include <QMessageBox>
 
-#include <dialogs/OperationDialogs.h>
 #include <GZip.h>
 #include <Utils.h>
 #include <TaikoSong.h>
 #include <Nus3bank.h>
 #include <Queue.h>
 
+#define TAIKOTOOL_VER_MAJOR "0"
+#define TAIKOTOOL_VER_MINOR "0"
+#define TAIKOTOOL_VER_PATCH "1"
+
+#define TAIKOTOOL_VER QString(TAIKOTOOL_VER_MAJOR "." TAIKOTOOL_VER_MINOR "." TAIKOTOOL_VER_PATCH)
+
 class SongManager : public QObject {
     Q_OBJECT
 
 public:
-    static constexpr const char *REQUIRED_JSON_KEYS[] = {
-            "uniqueId",
-            "id",
-            "songFileName",
-            "order",
-            "genreNo",
-            "secretFlag",
-            "dlc",
-            "debug",
-            "recording",
-            "branchEasy",
-            "branchNormal",
-            "branchHard",
-            "branchMania",
-            "branchUra",
-            "starEasy",
-            "starNormal",
-            "starHard",
-            "starMania",
-            "starUra",
-            "shinutiEasy",
-            "shinutiNormal",
-            "shinutiHard",
-            "shinutiMania",
-            "shinutiUra",
-            "shinutiEasyDuet",
-            "shinutiNormalDuet",
-            "shinutiHardDuet",
-            "shinutiManiaDuet",
-            "shinutiUraDuet",
-            "scoreEasy",
-            "scoreNormal",
-            "scoreHard",
-            "scoreMania",
-            "scoreUra",
-            "alleviationEasy", // Whatever alleviation is (these are almost always false)
-            "alleviationNormal",
-            "alleviationHard",
-            "alleviationMania",
-            "alleviationUra"
-            // NOTE: bgDon0, bgDancer0, chibi0, rendaEffect0, etc. seem to be unused: they will not be included
-    };
-
     enum Flag {
         SECRET,
         DLC,
