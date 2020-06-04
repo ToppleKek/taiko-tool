@@ -186,6 +186,10 @@ void TaikoSong::setRecordingFlag(bool state) {
     musicInfoEntry["recording"] = state;
 }
 
+void TaikoSong::setOrder(int order) {
+    musicInfoEntry["order"] = order;
+}
+
 bool TaikoSong::operator==(const TaikoSong &rhs) const {
     return getId() == rhs.getId();
 }

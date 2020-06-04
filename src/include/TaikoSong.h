@@ -65,6 +65,7 @@ public:
     void setDLCFlag(bool state);
     void setDebugFlag(bool state);
     void setRecordingFlag(bool state);
+    void setOrder(int order);
 
     bool operator==(const TaikoSong &rhs) const;
     bool operator!=(const TaikoSong &rhs) const;

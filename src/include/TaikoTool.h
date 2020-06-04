@@ -18,7 +18,7 @@
 #include <SongTabManager.h>
 #include <BuildTabManager.h>
 #include <GZip.h>
-#include <Nus3bank.h>
+#include <Convert.h>
 
 #include "ui_TaikoTool.h"
 

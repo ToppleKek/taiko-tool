@@ -2,6 +2,7 @@
 
 TaikoTool::TaikoTool(QMainWindow *parent) : QMainWindow(parent), ui(new Ui::TaikoTool),
                                             settings(new QSettings("ToppleKek", "taiko-tool")) {
+    Convert::wiiuFumenToNX("/home/topkek/testTaikoFolder/wiiu_stuff/natsu_m.bin", "/home/topkek/testTaikoFolder/wiiu_stuff/output.bin");
     songManager = new SongManager(settings);
     ui->setupUi(this);
 

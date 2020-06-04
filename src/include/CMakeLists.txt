@@ -2,7 +2,7 @@ target_sources(taiko_tool
         PRIVATE
         BuildTabManager.h
         GZip.h
-        Nus3bank.h
+        Convert.h
         Queue.h
         SongManager.h
         SongTabManager.h

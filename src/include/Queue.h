@@ -8,7 +8,7 @@
 #include <QSettings>
 
 #include <TaikoSong.h>
-#include <Nus3bank.h>
+#include <Convert.h>
 
 template <class T>
 class Queue {
@@ -55,7 +55,7 @@ public slots:
 
         while(queue->dequeue(song) && !*canceled) {
             QString outPath = outDir->path() + "/" + song.getSongFileName() + ".nus3bank";
-            Nus3bank::orbisToNX(settings, song.getSongFilePath(), outPath, song.getId());
+            Convert::orbisSongToNX(settings, song.getSongFilePath(), outPath, song.getId());
 
             emit workerProgress();
         }

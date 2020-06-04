@@ -37,7 +37,7 @@ namespace Utils {
         return -1;
     }
 
-    static void write32LE(uint32_t offset, uint32_t value, QByteArray &byteArray) {
+    static void write32(uint32_t offset, uint32_t value, QByteArray &byteArray) {
         uint8_t *p = (uint8_t *) &value;
 
         for (int i = 0; i < 4; i++, offset++)
@@ -49,6 +49,19 @@ namespace Utils {
 
         for (int i = 0; i < n; i++, offset++)
             byteArray[offset] = str[i];
+    }
+
+    static uint32_t toLE32(uint32_t be32) {
+        printf("%#010x\n", be32);
+        uint8_t *p = (uint8_t *) &be32;
+        printf("%#04x, %#04x, %#04x, %#04x\n", p[3], p[2], p[1], p[0]);
+        return ((p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0]);
+    }
+
+    static uint16_t toLE16(uint16_t be16) {
+        uint8_t *p = (uint8_t *) &be16;
+
+        return ((p[1] << 8) | p[0]);
     }
 }
 

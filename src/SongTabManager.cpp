@@ -9,10 +9,8 @@ SongTabManager::SongTabManager(Ui::TaikoTool *ui, SongManager *songManager, QSet
     connect(ui->playStopButton, &QPushButton::clicked, this, &SongTabManager::playStopButtonClicked);
     connect(ui->addToBuildButton, &QPushButton::clicked, this, &SongTabManager::addToBuildButtonClicked);
     connect(ui->removeFromBuildButton, &QPushButton::clicked, this, &SongTabManager::removeFromBuildButtonClicked);
-    connect(ui->singleSongPropButtonGroup, QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), this,
-            &SongTabManager::singleSongPropCheckboxToggled);
-    connect(ui->multiSongPropButtonGroup, QOverload<int>::of(&QButtonGroup::buttonClicked), this,
-            &SongTabManager::multiSongPropButtonClicked);
+    connect(ui->singleSongPropButtonGroup, QOverload<QAbstractButton *, bool>::of(&QButtonGroup::buttonToggled), this, &SongTabManager::singleSongPropCheckboxToggled);
+    connect(ui->multiSongPropButtonGroup, QOverload<int>::of(&QButtonGroup::buttonClicked), this, &SongTabManager::multiSongPropButtonClicked);
     connect(songManager, &SongManager::songUpdated, this, &SongTabManager::songUpdated);
     connect(ui->songTree, &QWidget::customContextMenuRequested, this, &SongTabManager::songTreeContextMenu);
 

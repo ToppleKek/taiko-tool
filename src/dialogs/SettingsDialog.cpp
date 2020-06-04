@@ -5,6 +5,7 @@ SettingsDialog::SettingsDialog(QDialog *parent, QSettings *settings) : QDialog(p
     setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     ui->vsLineEdit->setText(settings->value("vgmstream/path").toString());
     ui->vaLineEdit->setText(settings->value("vgaudio/path").toString());
+    ui->threadSpinBox->setValue(settings->value("build/numThreads").toInt());
 
     connect(ui->vsBrowseButton, &QPushButton::clicked, this, [=]() {
         QString newPath = QFileDialog::getOpenFileName(this, "Select vgmstream-cli binary...");
@@ -23,6 +24,7 @@ SettingsDialog::SettingsDialog(QDialog *parent, QSettings *settings) : QDialog(p
     connect(ui->settingsButtonBox, &QDialogButtonBox::accepted, this, [=]() {
         settings->setValue("vgmstream/path", ui->vsLineEdit->text());
         settings->setValue("vgaudio/path", ui->vaLineEdit->text());
+        settings->setValue("build/numThreads", ui->threadSpinBox->value());
 
         this->accept();
     });

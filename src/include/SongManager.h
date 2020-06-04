@@ -18,7 +18,7 @@
 #include <GZip.h>
 #include <Utils.h>
 #include <TaikoSong.h>
-#include <Nus3bank.h>
+#include <Convert.h>
 #include <Queue.h>
 
 #define TAIKOTOOL_VER_MAJOR "0"
@@ -44,7 +44,7 @@ public:
         bool showVersionSongSelect;
         bool showSourceSubText;
     };
-    //TODO: singleton
+
     explicit SongManager(QSettings *settings);
 
     void processGameDir(const QDir &dir, const QString &source, bool loadSystemWords = false);
